@@ -22,9 +22,9 @@ export default function App() {
       const transcript = await getTranscript(url);
       const summaryText = await generateSummary(transcript.map((t: any) => t.text).join(' '));
       setSummary(summaryText);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Failed to generate summary. Please check the URL and try again.');
+      alert(`Error: ${error.message || 'Failed to generate summary. Please check the URL and try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-zinc-100 p-4 md:p-8 font-sans">
       <header className="max-w-3xl mx-auto mb-12 text-center">
         <div className="flex justify-center mb-4">
           <img src="/public/logo.svg" alt="VidBrief Logo" className="w-16 h-16" />
