@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { getTranscript } from './services/youtubeService';
 import { generateSummary } from './services/geminiService';
-import { Loader2, Copy, Download, Youtube } from 'lucide-react';
+import { Loader2, Copy, Download, Youtube, Sparkles } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { motion } from 'motion/react';
 
@@ -16,6 +16,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
+    if (!url) return;
     setLoading(true);
     try {
       const transcript = await getTranscript(url);
@@ -23,7 +24,7 @@ export default function App() {
       setSummary(summaryText);
     } catch (error) {
       console.error(error);
-      alert('Failed to generate summary.');
+      alert('Failed to generate summary. Please check the URL and try again.');
     } finally {
       setLoading(false);
     }
@@ -41,28 +42,32 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-4 md:p-8">
-      <header className="max-w-4xl mx-auto mb-8 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">VidBrief – YouTube Video Summarizer</h1>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8 font-sans">
+      <header className="max-w-3xl mx-auto mb-12 text-center">
+        <div className="flex justify-center mb-4">
+          <img src="/public/logo.svg" alt="VidBrief Logo" className="w-16 h-16" />
+        </div>
+        <h1 className="text-5xl font-extrabold tracking-tighter text-white mb-2">VidBrief</h1>
+        <p className="text-zinc-400 text-lg">YouTube Video Summarizer</p>
       </header>
       
-      <main className="max-w-4xl mx-auto space-y-8">
-        <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700">
-          <div className="flex gap-4">
+      <main className="max-w-3xl mx-auto space-y-8">
+        <div className="bg-zinc-900 p-2 rounded-2xl border border-zinc-800 shadow-2xl">
+          <div className="flex gap-2">
             <input 
               type="text" 
               value={url} 
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Paste YouTube URL here..."
-              className="flex-grow p-3 rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900"
+              className="flex-grow p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-600"
             />
             <button 
               onClick={handleGenerate}
               disabled={loading}
-              className="px-6 py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-4 bg-white text-zinc-950 rounded-xl font-bold hover:bg-zinc-200 disabled:opacity-50 flex items-center gap-2 transition-colors"
             >
-              {loading ? <Loader2 className="animate-spin" /> : <Youtube />}
-              Generate Summary
+              {loading ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
+              {loading ? 'Summarizing...' : 'Generate'}
             </button>
           </div>
         </div>
@@ -71,13 +76,16 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-zinc-800 p-8 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 space-y-6"
+            className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-2xl space-y-6"
           >
-            <div className="flex justify-end gap-2">
-              <button onClick={copyToClipboard} className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700"><Copy size={20} /></button>
-              <button onClick={exportPDF} className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700"><Download size={20} /></button>
+            <div className="flex justify-between items-center border-b border-zinc-800 pb-4">
+              <h2 className="text-2xl font-bold text-white">Summary</h2>
+              <div className="flex gap-2">
+                <button onClick={copyToClipboard} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"><Copy size={20} /></button>
+                <button onClick={exportPDF} className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"><Download size={20} /></button>
+              </div>
             </div>
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
               {summary}
             </div>
           </motion.div>

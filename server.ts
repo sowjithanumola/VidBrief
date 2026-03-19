@@ -1,10 +1,13 @@
 import express from "express";
 import { YoutubeTranscript } from "youtube-transcript";
+import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 app.get("/api/transcript", async (req, res) => {
   const { url } = req.query;
@@ -18,6 +21,34 @@ app.get("/api/transcript", async (req, res) => {
   } catch (error) {
     console.error("Error fetching transcript:", error);
     res.status(500).json({ error: "Failed to fetch transcript" });
+  }
+});
+
+app.post("/api/summarize", async (req, res) => {
+  const { transcript } = req.body;
+  if (!transcript) {
+    return res.status(400).json({ error: "Missing transcript" });
+  }
+
+  try {
+    const prompt = `Summarize the following YouTube video transcript:
+    ${transcript}
+    
+    Please provide:
+    1) A short paragraph summary.
+    2) Bullet points explaining the main ideas.
+    3) Key takeaways.
+    4) Structured notes for studying.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+    });
+
+    res.json({ summary: response.text });
+  } catch (error) {
+    console.error("Error generating summary:", error);
+    res.status(500).json({ error: "Failed to generate summary" });
   }
 });
 
