@@ -7,7 +7,11 @@ const PORT = 3000;
 
 app.use(express.json());
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.error("GEMINI_API_KEY is not set in the environment.");
+}
+const ai = new GoogleGenAI({ apiKey: apiKey || "" });
 
 app.get("/api/transcript", async (req, res) => {
   const { url } = req.query;
@@ -30,6 +34,10 @@ app.post("/api/summarize", async (req, res) => {
     return res.status(400).json({ error: "Missing transcript" });
   }
 
+  if (!apiKey) {
+    return res.status(500).json({ error: "Gemini API key is not configured." });
+  }
+
   try {
     const prompt = `Summarize the following YouTube video transcript:
     ${transcript}
@@ -38,7 +46,9 @@ app.post("/api/summarize", async (req, res) => {
     1) A short paragraph summary.
     2) Bullet points explaining the main ideas.
     3) Key takeaways.
-    4) Structured notes for studying.`;
+    4) Structured notes for studying.
+    
+    IMPORTANT: Provide ONLY the summary content. Do not include any introductory or concluding remarks, branding, or phrases like "Powered by Gemini".`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -48,7 +58,7 @@ app.post("/api/summarize", async (req, res) => {
     res.json({ summary: response.text });
   } catch (error) {
     console.error("Error generating summary:", error);
-    res.status(500).json({ error: "Failed to generate summary" });
+    res.status(500).json({ error: "Failed to generate summary. Please check your API key and try again." });
   }
 });
 
