@@ -1,5 +1,5 @@
 import express from "express";
-import { YoutubeTranscript } from "youtube-transcript";
+import * as YoutubeTranscript from "youtube-transcript";
 import { GoogleGenAI } from "@google/genai";
 
 const app = express();
